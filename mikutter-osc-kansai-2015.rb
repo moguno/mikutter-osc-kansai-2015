@@ -290,7 +290,7 @@ Plugin.create(:mikutter_osc) {
           msg = [
             "ではでは！",
             "",
-            "OSC関西@京都2015",
+            "OSC2015 関西@京都",
             "",
             "楽しみましょー♪",
           ]
@@ -381,7 +381,7 @@ Plugin.create(:mikutter_osc) {
     end
 
     def get_memo_layout(context = dummy_context)
-      memo = "OSC関西2015参加中"
+      memo = "OSC2015関西 参加中"
 
       (attr_list, text) = Pango.parse_markup(memo)
       layout = context.create_pango_layout
