@@ -1,11 +1,11 @@
 ---
-slug: :mikutter-osc-kansai-2014
+slug: :mikutter-osc-kansai-2015
 depends:
-  mikutter: 3.0.3
+  mikutter: 3.0.0
   plugin:
   - gui
   - gtk
 version: '0.0.6'
 author: 
-name: mikutter osc kansai support 2014
-description: OS kansai 2014のセミナースケジュールを表示するだけだと思った？
+name: mikutter osc kansai support 2015
+description: OSC kansai 2015のセミナースケジュールを表示するだけだと思った？
