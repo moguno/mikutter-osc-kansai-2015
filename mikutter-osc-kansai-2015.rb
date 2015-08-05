@@ -14,6 +14,7 @@ Plugin.create(:mikutter_osc) {
     :D => "１号館４Ｆ 会議室Ｄ",
     :E => "１号館４Ｆ 会議室Ｅ",
     :OS => "アトリウム１Ｆ オープンスペース",
+    :EV => "１号館４Ｆ エレベーター前",
   }
 
   TIME_TABLE = {
@@ -52,11 +53,13 @@ Plugin.create(:mikutter_osc) {
     Seminor.new(:_1_13, :AV, "小型コンピュータ Raspberry Pi へのいざない"),
     Seminor.new(:_1_13, :A, "スマホアプリのオープンソース「Piece（ピース）」の活用方法と導入事例"),
     Seminor.new(:_1_13, :B, "DDNのクラウドプラットフォームビジネスへの取り組み　～導入事例、性能検証結果を交えて～"),
+    Seminor.new(:_1_13, :EV, "展示ブースツアー1回目\n\n予約：http://www.ospn.jp/osc2015-kyoto/modules/eguide/event.php?eid=70"),
 
     Seminor.new(:_1_14, :SC, "豪華2本立て『オープンソース入門』『OSSプランニングエンジン OptaPlannerを使ってみよう！』"),
     Seminor.new(:_1_14, :AV, "3年ぶりの大規模メジャーバージョンアップ「Hinemos ver.5.0」～監視もジョブもDevもOpsもHinemosで～"),
     Seminor.new(:_1_14, :A, "Postgresへのスマートなデータ移行とアプリケーション開発"),
     Seminor.new(:_1_14, :B, "Ejectコマンド工作、その魅力に迫る。"),
+    Seminor.new(:_1_14, :EV, "展示ブースツアー2回目（最終）\n\n予約：http://www.ospn.jp/osc2015-kyoto/modules/eguide/event.php?eid=70"),
 
     Seminor.new(:_1_15, :SC, "Pandora FMS でサーバ 1台から大規模サイトまでの幅広い監視を実現 ～統合監視ツール Pandora FMS の実力～"),
     Seminor.new(:_1_15, :AV, "自治体の港湾業務システムをSymfony2でゼロから作ってみた。"),
@@ -84,6 +87,7 @@ Plugin.create(:mikutter_osc) {
     Seminor.new(:_2_11, :D, "LibreOfficeの最新動向/LibreOfficeの使いどころ"),
     Seminor.new(:_2_11, :E, "Debian Updates (Jessie, Stretch, Buster)"),
     Seminor.new(:_2_11, :OS, "セキュリティ競技CTFって何？～CTFを通じて楽しくセキュリティとふれ合おう～"),
+    Seminor.new(:_2_11, :EV, "展示ブースツアー 1回目\n\n予約：http://www.ospn.jp/osc2015-kyoto/modules/eguide/event.php?eid=70"),
 
     Seminor.new(:_2_12, :SC, "インフラエンジニア、アプリ開発者集まれ！今注目のクラウド 「Bluemix」、「SoftLayer」をはじめよう！"),
     Seminor.new(:_2_12, :AV, "Samba4を「ふつうに」使おう！Samba4によるファイルサーバ構築テクニック"),
@@ -92,6 +96,7 @@ Plugin.create(:mikutter_osc) {
     Seminor.new(:_2_12, :C, "とことん紹介！OpenStreetMapとその活用事例"),
     Seminor.new(:_2_12, :D, "xrdpのご紹介 ～シンクライアントとの組み合わせでVDI～"),
     Seminor.new(:_2_12, :OS, "KMC(京大マイコンクラブ)学習発表会"),
+    Seminor.new(:_2_12, :EV, "展示ブースツアー2回目\n\n予約：http://www.ospn.jp/osc2015-kyoto/modules/eguide/event.php?eid=70"),
 
     Seminor.new(:_2_13, :SC, "今こそ語るエンジニアの幸せな未来～OSC京都編～"),
     Seminor.new(:_2_13, :AV, "コンテナ(Docker)時代のインフラ技術・運用管理に迫る！"),
@@ -101,6 +106,7 @@ Plugin.create(:mikutter_osc) {
     Seminor.new(:_2_13, :D, "Contao Open Source CMSの最新動向 ～ バージョン3.5 LTSと4.0"),
     Seminor.new(:_2_13, :E, "TIBCO Jaspersoft概要 / JasperReportsでエクセルシートを作った事例"),
     Seminor.new(:_2_13, :OS, "ロケットや自動車にも搭載！高品質な組込み向けオープンソースを開発するTOPPERSプロジェクトのご紹介"),
+    Seminor.new(:_2_13, :EV, "展示ブースツアー3回目（最終）\n\n予約：http://www.ospn.jp/osc2015-kyoto/modules/eguide/event.php?eid=70"),
 
     Seminor.new(:_2_14, :SC, "異なる領域を組み合わせたものづくりを文化として根付かせるには～ArduinoやPICマイコンでIoTやアートを楽しもう～"),
     Seminor.new(:_2_14, :AV, "クラウド時代を生きぬくためのITエンジニアとシステムインテグレータの OSS活用！"),
@@ -160,7 +166,7 @@ Plugin.create(:mikutter_osc) {
   def make_header_msg(next_seminor_time)
     msg = []
     msg << "ぴんぽんぱんぽーん♪"
-    msg << "次のセミナーのお知らせです。"
+    msg << "次のイベントのお知らせです。"
     msg << ""
     msg << "●●●#{TIME_TABLE[next_seminor_time][0].strftime("%e日%H:%Mより")}●●●"
 
@@ -176,9 +182,9 @@ Plugin.create(:mikutter_osc) {
         "#{sem.subject}"
       ]
 
-      Message.new(:message => msg.join("\n"), :system => true, :confirm => { "聴きに行く" => :join }, :confirm_callback => lambda { |button|
+      Message.new(:message => msg.join("\n"), :system => true, :confirm => { "行く！" => :join }, :confirm_callback => lambda { |button|
         post_message = [
-          "次は「#{sem.subject}」を聴講します。",
+          "次は「#{sem.subject}」に行きます。",
           "",
           "#ＯＳＣ関西に来ています"
         ]
@@ -204,7 +210,7 @@ Plugin.create(:mikutter_osc) {
     seminor_msgs
   end
 
-  # セミナー案内を表示
+  # イベント案内を表示
   def show_seminors(next_seminor_time, seminors)
     timeline(:home_timeline) << make_header_msg(next_seminor_time)
 
@@ -233,7 +239,7 @@ Plugin.create(:mikutter_osc) {
       Reserver.new(3) {
         Delayer.new {
           msg = [
-            "こんな感じで開始15分前に次のセミナーをお知らせするね。",
+            "こんな感じで開始15分前に次のイベントをお知らせするね。",
             "",
             "お知らせはウインドウ下部のOSCボタンでも見られるよ。",
             "",
@@ -248,11 +254,11 @@ Plugin.create(:mikutter_osc) {
       Reserver.new(6) {
         Delayer.new {
           msg = [
-            "「聴きに行く」ボタンを押すと、",
+            "「行く！」ボタンを押すと、",
             "",
             "#ＯＳＣ関西に来ています",
             "",
-            "ハッシュタグ付きでセミナー名をツイートするよ。"
+            "ハッシュタグ付きでイベント名をツイートするよ。"
           ]
 
           timeline(:home_timeline) << Message.new(:message => msg.join("\n"), :system => true)
@@ -327,7 +333,7 @@ Plugin.create(:mikutter_osc) {
   }
 
   # コマンド
-  command(:notify_seminor, name: "次のセミナーは？", condition: lambda { |opt| true }, visible: true, icon: "http://www.ospn.jp/favicon.ico", role: :window) { |opt|
+  command(:notify_seminor, name: "次のイベントは？", condition: lambda { |opt| true }, visible: true, icon: "http://www.ospn.jp/favicon.ico", role: :window) { |opt|
     next_seminor_time = get_next_seminor_time(Time.now)
 
     seminors = SEMINORS.select { |sem|
