@@ -194,7 +194,9 @@ Plugin.create(:mikutter_osc) {
     }
 
     msg = [
-      "それとも、ブースを見に行く？"
+      "それとも、ブースを見に行く？",
+      "",
+      "スタンプラリーも楽しいよ。",
     ]
 
     seminor_msgs << Message.new(:message => msg.join("\n"), :system => true, :confirm => { "そうしよう" => :join }, :confirm_callback => lambda { |button|
