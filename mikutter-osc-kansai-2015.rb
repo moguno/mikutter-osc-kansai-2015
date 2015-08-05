@@ -39,6 +39,7 @@ Plugin.create(:mikutter_osc) {
 
   SEMINORS = [
     Seminor.new(:_1_10, :SC, "HTML5開発最前線"),
+    Seminor.new(:_1_10, :EV, "13:00,14:00に展示ブースツアーがあるよ\n\n予約：http://www.ospn.jp/osc2015-kyoto/modules/eguide/event.php?eid=70"),
 
     Seminor.new(:_1_11, :SC, "業界をリードするオープンソース仮想化プラットフォーム、XenServer最新情報"),
     Seminor.new(:_1_11, :AV, "OSSライセンスと著作権法の概要"),
@@ -46,8 +47,8 @@ Plugin.create(:mikutter_osc) {
     Seminor.new(:_1_11, :B, "AMDが推進するHSA(OpenCL)やARMやAPU製品、GPU製品の最新の開発状況をお届け！"),
 
     Seminor.new(:_1_12, :A, "ライトニングトーク（by OSCスポンサー）"),
-    Seminor.new(:_1_12, :B, "VPS もデスクトップも YaST を使って Linux をらくらく設定―ファイルサーバー構築・管理編
-"),
+    Seminor.new(:_1_12, :B, "VPS もデスクトップも YaST を使って Linux をらくらく設定―ファイルサーバー構築・管理編"),
+    Seminor.new(:_1_12, :EV, "13:00,14:00に展示ブースツアーがあるよ\n\n予約：http://www.ospn.jp/osc2015-kyoto/modules/eguide/event.php?eid=70"),
 
     Seminor.new(:_1_13, :SC, "これから始める人のための自動化入門～Ubuntu Jujuを使って～"),
     Seminor.new(:_1_13, :AV, "小型コンピュータ Raspberry Pi へのいざない"),
@@ -78,6 +79,7 @@ Plugin.create(:mikutter_osc) {
     Seminor.new(:_2_10, :C, "Wikipedia の情報をもっと有効活用する Wikipedia Word Analyzer を開発するに当たって"),
     Seminor.new(:_2_10, :D, "中古コンデジを活用して勉強会の面白さ・楽しさを伝える"),
     Seminor.new(:_2_10, :OS, "かわいくておしゃれな電子ブロック littleBits で遊びながらコンピュータの原理を学ぼう！"),
+    Seminor.new(:_2_10, :EV, "11:00,12:00,13:00に展示ブースツアーがあるよ\n\n予約：http://www.ospn.jp/osc2015-kyoto/modules/eguide/event.php?eid=70"),
 
     Seminor.new(:_2_11, :SC, "FirefoxとWebの未来 - Mozillaはこれから何にフォーカスしていくのか"),
     Seminor.new(:_2_11, :AV, "新入社員のための大規模ゲーム開発入門 サーバサイド編"),
