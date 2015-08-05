@@ -121,7 +121,6 @@ Plugin.create(:mikutter_osc) {
     Seminor.new(:_2_16, :SC, "ライトニングトーク＆大抽選会＆閉会式"),
   ]
 
-
   # ループする人
   class OSCLooper
     attr_reader :stop
@@ -144,7 +143,6 @@ Plugin.create(:mikutter_osc) {
     end
   end
 
- 
   # 今以降直近のセミナーの時刻を得る
   def get_next_seminor_time(time)
     result = TIME_TABLE.find { |key, semi_time|
@@ -185,12 +183,6 @@ Plugin.create(:mikutter_osc) {
           "#ＯＳＣ関西に来ています"
         ]
 
-        post_message = [
-          "「#{sem.subject}」",
-          "",
-          "#てすと"
-        ]
-
         Service.primary.update(:message => post_message.join("\n"))
       })
     }
@@ -204,12 +196,6 @@ Plugin.create(:mikutter_osc) {
         "次はブースを見学します。",
         "",
         "#ＯＳＣ関西に来ています"
-      ]
-
-      post_message = [
-        "ブース",
-        "",
-        "#てすと"
       ]
 
       Service.primary.update(:message => post_message.join("\n"))
@@ -249,7 +235,7 @@ Plugin.create(:mikutter_osc) {
           msg = [
             "こんな感じで開始15分前に次のセミナーをお知らせするね。",
             "",
-            "お知らせはウインドウ下部のメガホンボタンでも見られるよ。",
+            "お知らせはウインドウ下部のOSCボタンでも見られるよ。",
             "",
             "情報は8/3時点のものだから、会場の最新情報も必ずチェックしてね。",
             "",
@@ -303,11 +289,11 @@ Plugin.create(:mikutter_osc) {
         }
       }
 
-      # セミナー15分前検知ループ開始
+      # ループ開始
       @first_flag = false
 
       OSCLooper.new.start(-> {1 * 60 + 1}) {
-        # 仲間探し
+        # ておくれ探し
         Service.primary.search(:q => "\"#ＯＳＣ関西に来ています\"", :count => 100).next { |res|
           res.each { |message|
             $users << message[:user][:screen_name]
@@ -317,11 +303,13 @@ Plugin.create(:mikutter_osc) {
           puts e.backtrace
         }
 
+        # 初回は説明ツイートと被るので動かさない
         if !@first_flag
           @first_flag = true
           next
         end
 
+        # 15分前チェック
         next_seminor_time = get_next_seminor_time(Time.now)
 
         if ((TIME_TABLE[next_seminor_time][0] - Time.now) <= (15 * 60)) && (@last_notified != next_seminor_time)
@@ -338,7 +326,8 @@ Plugin.create(:mikutter_osc) {
     end
   }
 
-  command(:notify_seminor, name: "次のセミナーは？", condition: lambda { |opt| true }, visible: true, icon: Skin.get("post.png"), role: :window) { |opt|
+  # コマンド
+  command(:notify_seminor, name: "次のセミナーは？", condition: lambda { |opt| true }, visible: true, icon: "http://www.ospn.jp/favicon.ico", role: :window) { |opt|
     next_seminor_time = get_next_seminor_time(Time.now)
 
     seminors = SEMINORS.select { |sem|
