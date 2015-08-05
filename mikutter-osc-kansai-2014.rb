@@ -266,7 +266,7 @@ Plugin.create(:mikutter_osc) {
             "",
             "#ＯＳＣ関西に来ています",
             "",
-            "ハッシュタグ付きでセミナー名をツイートするよ"
+            "ハッシュタグ付きでセミナー名をツイートするよ。"
           ]
 
           timeline(:home_timeline) << Message.new(:message => msg.join("\n"), :system => true)
@@ -303,7 +303,6 @@ Plugin.create(:mikutter_osc) {
         }
       }
 
-
       # セミナー15分前検知ループ開始
       @first_flag = false
 
@@ -325,11 +324,7 @@ Plugin.create(:mikutter_osc) {
 
         next_seminor_time = get_next_seminor_time(Time.now)
 
-puts next_seminor_time
-puts @last_notified
         if ((TIME_TABLE[next_seminor_time][0] - Time.now) <= (15 * 60)) && (@last_notified != next_seminor_time)
-puts "vvvvvvvv"
-
           seminors = SEMINORS.select { |sem|
             sem.time == next_seminor_time
           }
@@ -360,24 +355,50 @@ puts "vvvvvvvv"
 
     def initialize(*args)
       super(*args)
+    end
 
-      @memo = "OSC関西2015参加中"
+    def get_toshi_a_layout(context = dummy_context)
+      memo = [
+        "↑ふぁぼれ！",
+        "ておくれ神降臨！",
+        "ふぁぼ不足！",
+        "※作者です",
+        "※ておくれです",
+      ].sample
+
+      (attr_list, text) = Pango.parse_markup(memo)
+      layout = context.create_pango_layout
+      layout.width = width * Pango::SCALE
+      layout.attributes = attr_list
+      layout.wrap = Pango::WRAP_CHAR
+
+      UserConfig[:mumble_reply_font] =~ / ([0-9]+)$/
+      big_font = UserConfig[:mumble_reply_font].gsub(/ ([0-9]+)$/, " #{$1.to_i * 1.5}")
+
+      layout.font_description = Pango::FontDescription.new(big_font)
+      layout.text = memo
+
+      layout
     end
 
     def get_memo_layout(context = dummy_context)
-      (attr_list, text) = Pango.parse_markup(@memo)
+      memo = "OSC関西2015参加中"
+
+      (attr_list, text) = Pango.parse_markup(memo)
       layout = context.create_pango_layout
       layout.width = width * Pango::SCALE
       layout.attributes = attr_list
       layout.wrap = Pango::WRAP_CHAR
       layout.font_description = Pango::FontDescription.new(UserConfig[:mumble_reply_font])
-      layout.text = @memo
+      layout.text = memo
 
       layout
     end
 
     def height
-      if $users.include?(helper.message[:user][:screen_name]) || helper.message[:osc]
+      if helper.message[:user][:screen_name] == "toshi_a"
+        get_toshi_a_layout.pixel_size[1]
+      elsif $users.include?(helper.message[:user][:screen_name]) || helper.message[:osc]
         get_memo_layout.pixel_size[1]
       else
         0
@@ -385,7 +406,7 @@ puts "vvvvvvvv"
     end
 
     def render(context)
-      if ($users.include?(helper.message[:user][:screen_name]) || helper.message[:osc]) && helper.visible? && helper.message 
+      if ($users.include?(helper.message[:user][:screen_name]) || helper.message[:osc] || helper.message[:user][:screen_name] == "toshi_a") && helper.visible? && helper.message 
         context.save{
           icon_size = 16
 
@@ -395,8 +416,14 @@ puts "vvvvvvvv"
           context.paint
 
           context.translate(icon_size + helper.icon_margin * 2, 0)
-          context.set_source_rgb([0, 0, 65535].map{ |c| c.to_f / 65536 })
-          context.show_pango_layout(get_memo_layout(context))
+
+          if helper.message[:user][:screen_name] == "toshi_a"
+            context.set_source_rgb([65535, 0, 0].map{ |c| c.to_f / 65536 })
+            context.show_pango_layout(get_toshi_a_layout(context))
+          else
+            context.set_source_rgb([0, 0, 65535].map{ |c| c.to_f / 65536 })
+            context.show_pango_layout(get_memo_layout(context))
+          end
         }
       end
     end
