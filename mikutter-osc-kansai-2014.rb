@@ -145,6 +145,7 @@ Plugin.create(:mikutter_osc) {
   end
 
  
+  # 今以降直近のセミナーの時刻を得る
   def get_next_seminor_time(time)
     result = TIME_TABLE.find { |key, semi_time|
       (semi_time[1] > time) && ( semi_time[0] > time )
@@ -157,21 +158,81 @@ Plugin.create(:mikutter_osc) {
     end
   end
 
-
-  def make_msg_array(next_seminor_time, seminors)
+  # ヘッダメッセージを生成する
+  def make_header_msg(next_seminor_time)
     msg = []
     msg << "ぴんぽんぱんぽーん♪"
     msg << "次のセミナーのお知らせです。"
     msg << ""
-    msg << "●●●#{TIME_TABLE[next_seminor_time][0].strftime("%H:%Mより")}●●●"
+    msg << "●●●#{TIME_TABLE[next_seminor_time][0].strftime("%e日%H:%Mより")}●●●"
 
-    msg += seminors.map { |sem|
-      ["", "【#{PLACE_TABLE[sem.place]}】", "#{sem.subject}"]
-    }.flatten
-
-    msg
+    Message.new(:message => msg.join("\n"), :system => true)
   end
 
+  # メッセージを生成する
+  def make_msgs(seminors)
+    seminor_msgs = seminors.map { |sem|
+      msg = [
+        "【#{PLACE_TABLE[sem.place]}】", 
+        "",
+        "#{sem.subject}"
+      ]
+
+      Message.new(:message => msg.join("\n"), :system => true, :confirm => { "聴きに行く" => :join }, :confirm_callback => lambda { |button|
+        post_message = [
+          "次は「#{sem.subject}」を聴講します。",
+          "",
+          "#ＯＳＣ関西に来ています"
+        ]
+
+        post_message = [
+          "「#{sem.subject}」",
+          "",
+          "#てすと"
+        ]
+
+        Service.primary.update(:message => post_message.join("\n"))
+      })
+    }
+
+    msg = [
+      "それとも、ブースを見に行く？"
+    ]
+
+    seminor_msgs << Message.new(:message => msg.join("\n"), :system => true, :confirm => { "そうしよう" => :join }, :confirm_callback => lambda { |button|
+      post_message = [
+        "次はブースを見学します。",
+        "",
+        "#ＯＳＣ関西に来ています"
+      ]
+
+      post_message = [
+        "ブース",
+        "",
+        "#てすと"
+      ]
+
+      Service.primary.update(:message => post_message.join("\n"))
+    })
+
+    seminor_msgs
+  end
+
+  # セミナー案内を表示
+  def show_seminors(next_seminor_time, seminors)
+    timeline(:home_timeline) << make_header_msg(next_seminor_time)
+
+    make_msgs(seminors).each_with_index { |seminor, i|
+      Reserver.new(i * 3 + 3) {
+        Delayer.new {
+          seminor[:modified] = Time.now
+          timeline(:home_timeline) << seminor
+        }
+      }
+    }
+  end
+ 
+  # 起動時処理
   on_boot { |service|
     next_seminor_time = get_next_seminor_time(Time.now)
 
@@ -180,16 +241,15 @@ Plugin.create(:mikutter_osc) {
     }
 
     if seminors.length != 0
-      msg = make_msg_array(next_seminor_time, seminors)
-
-      timeline(:home_timeline) << Message.new(:message => msg.join("\n"), :system => true)
+      timeline(:home_timeline) << make_header_msg(next_seminor_time)
+      timeline(:home_timeline) << Messages.new(Array(make_msgs(seminors)[0]))
 
       Reserver.new(3) {
         Delayer.new {
           msg = [
             "こんな感じで開始15分前に次のセミナーをお知らせするね。",
             "",
-            "ウインドウ下部のメガホンボタンを押してくれてもOKだよ。",
+            "お知らせはウインドウ下部のメガホンボタンでも見られるよ。",
             "",
             "情報は8/3時点のものだから、会場の最新情報も必ずチェックしてね。",
             "",
@@ -199,10 +259,55 @@ Plugin.create(:mikutter_osc) {
         }
       }
 
-      # セミナー15分前検知
-      OSCLooper.new.start(-> {1 * 60 + 1}) {
-        next_seminor_time = get_next_seminor_time(Time.now)
+      Reserver.new(6) {
+        Delayer.new {
+          msg = [
+            "「聴きに行く」ボタンを押すと、",
+            "",
+            "#ＯＳＣ関西に来ています",
+            "",
+            "ハッシュタグ付きでセミナー名をツイートするよ"
+          ]
 
+          timeline(:home_timeline) << Message.new(:message => msg.join("\n"), :system => true)
+        }
+      }
+
+      Reserver.new(9) {
+        Delayer.new {
+          msg = [
+            "さらに！",
+            "",
+            "#ＯＳＣ関西に来ています",
+            "ハッシュタグ付きの人を見つけたら",
+            "",
+            "↓こんな感じでお知らせするね。",
+            "",
+          ]
+
+          timeline(:home_timeline) << Message.new(:message => msg.join("\n"), :system => true, :osc => true)
+        }
+      }
+
+      Reserver.new(12) {
+        Delayer.new {
+          msg = [
+            "ではでは！",
+            "",
+            "OSC関西@京都2015",
+            "",
+            "楽しみましょー♪",
+          ]
+
+          timeline(:home_timeline) << Message.new(:message => msg.join("\n"), :system => true)
+        }
+      }
+
+
+      # セミナー15分前検知ループ開始
+      @first_flag = false
+
+      OSCLooper.new.start(-> {1 * 60 + 1}) {
         # 仲間探し
         Service.primary.search(:q => "\"#ＯＳＣ関西に来ています\"", :count => 100).next { |res|
           res.each { |message|
@@ -213,20 +318,30 @@ Plugin.create(:mikutter_osc) {
           puts e.backtrace
         }
 
+        if !@first_flag
+          @first_flag = true
+          next
+        end
+
+        next_seminor_time = get_next_seminor_time(Time.now)
+
+puts next_seminor_time
+puts @last_notified
         if ((TIME_TABLE[next_seminor_time][0] - Time.now) <= (15 * 60)) && (@last_notified != next_seminor_time)
+puts "vvvvvvvv"
+
           seminors = SEMINORS.select { |sem|
             sem.time == next_seminor_time
           }
 
-          @last_notified = next_seminor_time
-         
-          msg = make_msg_array(next_seminor_time, seminors)
-          timeline(:home_timeline) << Message.new(:message => msg.join("\n"), :system => true)
+          if seminors.length != 0
+            show_seminors(next_seminor_time, seminors)
+            @last_notified = next_seminor_time
+          end
         end
       }
     end
   }
-
 
   command(:notify_seminor, name: "次のセミナーは？", condition: lambda { |opt| true }, visible: true, icon: Skin.get("post.png"), role: :window) { |opt|
     next_seminor_time = get_next_seminor_time(Time.now)
@@ -235,13 +350,10 @@ Plugin.create(:mikutter_osc) {
       sem.time == next_seminor_time
     }
 
-    if seminors
-      msg = make_msg_array(next_seminor_time, seminors)
-
-      timeline(:home_timeline) << Message.new(:message => msg.join("\n"), :system => true)
+    if seminors.length != 0
+      show_seminors(next_seminor_time, seminors)
     end
   }
-
 
   class OSCSubPartsMemo < ::Gdk::SubParts
     regist
@@ -265,7 +377,7 @@ Plugin.create(:mikutter_osc) {
     end
 
     def height
-      if $users.include?(helper.message[:user][:screen_name])
+      if $users.include?(helper.message[:user][:screen_name]) || helper.message[:osc]
         get_memo_layout.pixel_size[1]
       else
         0
@@ -273,7 +385,7 @@ Plugin.create(:mikutter_osc) {
     end
 
     def render(context)
-      if $users.include?(helper.message[:user][:screen_name]) && helper.visible? && helper.message
+      if ($users.include?(helper.message[:user][:screen_name]) || helper.message[:osc]) && helper.visible? && helper.message 
         context.save{
           icon_size = 16
 
